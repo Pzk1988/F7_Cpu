@@ -97,13 +97,14 @@ uint8_t Can::Init(uint8_t filterId)
 
 	CAN_FilterTypeDef  sFilterConfig;
 
+	uint32_t filter_mask = 0x1fffffff;
 	sFilterConfig.FilterBank = 0;
 	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-	sFilterConfig.FilterIdHigh = 0xFFFF;
-	sFilterConfig.FilterIdLow = 0xFFFF;
-	sFilterConfig.FilterMaskIdHigh = filterId << 5;
-	sFilterConfig.FilterMaskIdLow = 0x0000;
+	sFilterConfig.FilterIdHigh = ((filterId << 5)  | (filterId >> (32 - 5))) & 0xFFFF; // STID[10:0] & EXTID[17:13]
+	sFilterConfig.FilterIdLow = (filterId >> (11 - 3)) & 0xFFF8; // EXID[12:5] & 3 Reserved bits
+	sFilterConfig.FilterMaskIdHigh = ((filter_mask << 5)  | (filter_mask >> (32 - 5))) & 0xFFFF;
+	sFilterConfig.FilterMaskIdLow = (filter_mask >> (11 - 3)) & 0xFFF8;
 	sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
 	sFilterConfig.FilterActivation = ENABLE;
 	sFilterConfig.SlaveStartFilterBank = 14;
