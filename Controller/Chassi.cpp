@@ -32,7 +32,7 @@ Chassi::Chassi(Driver::ICan* can) : can(can)
 	}
 }
 
-void Chassi::ReadMsg(uint8_t senderId, uint8_t *pData, uint8_t len)
+void Chassi::RxMsg(uint8_t senderId, uint8_t *pData, uint8_t len)
 {
 	auto it = std::find_if(cardsVector.begin(), cardsVector.end(), [senderId](ICard* card)
 	{
@@ -48,11 +48,11 @@ void Chassi::ReadMsg(uint8_t senderId, uint8_t *pData, uint8_t len)
 
 	if(it != cardsVector.end())
 	{
-		(*it)->SetNewData(pData, len);
+		(*it)->RxMsg(pData, len);
 	}
 	else
 	{
-		Logger::GetInstance()->Log("Id %d was not found");
+		Logger::GetInstance()->LogV("Id %d was not found", senderId);
 	}
 }
 
@@ -62,34 +62,13 @@ void Chassi::Process()
 	{
 		card->Process();
 	});
-//	  if(HAL_GetTick() - prevTick > 2000)
-//	  {
-//		  prevTick = HAL_GetTick();
-//
-//		  // Frame to output card
-//		  result |= can->DataFrame(0x02, (uint8_t*)&tmp, 2);
-//		  if(result == HAL_OK)
-//		  {
-//			  char tab[40];
-//			  sprintf(tab, "Frame to output %x\n", tmp);
-//			  UdpWrite(tab, strlen(tab));
-//		  }
-//
-//		  // Frame to input card
-//		  result |= can->RemoteFrame(0x03);
-//		  if(result == HAL_OK)
-//		  {
-//			  UdpWrite("Frame to input\n", 16);
-//		  }
-//
-//		  // If error
-//		  if( result != HAL_OK )
-//		  {
-//			  UdpWrite("Can spierdolina", 15);
-//			  result = HAL_OK;
-//		  }
-//
-//		  tmp++;
-//	  }
+
+	static uint16_t prevState = 0;
+	uint16_t inState = ((InputCard*)cardsVector[1])->GetState();
+	if(inState != prevState)
+	{
+		((OutputCard*)cardsVector[0])->SetState(inState);
+	}
+	prevState = inState;
 }
 } // namespace Controller

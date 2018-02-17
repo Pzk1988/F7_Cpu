@@ -15,7 +15,7 @@ public:
 	}
 	virtual void Process() = 0;
 	virtual uint8_t GetId() const = 0;
-	virtual void SetNewData(uint8_t *pData, uint8_t len) = 0;
+	virtual void RxMsg(uint8_t *pData, uint8_t len) = 0;
 
 protected:
 	Driver::ICan* can;

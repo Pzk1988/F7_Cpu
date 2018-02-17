@@ -13,7 +13,7 @@ class Chassi
 public:
 	Chassi(Driver::ICan* can);
 	virtual ~Chassi() = default;
-	void ReadMsg(uint8_t senderId, uint8_t *pData, uint8_t len);
+	void RxMsg(uint8_t senderId, uint8_t *pData, uint8_t len);
 	void Process();
 
 private:

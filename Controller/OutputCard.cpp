@@ -1,6 +1,6 @@
 #include <OutputCard.hpp>
 #include "stm32f7xx_hal.h"
-#include "Garbage.hpp"
+#include "Logger.hpp"
 
 namespace Controller
 {
@@ -8,15 +8,16 @@ namespace Controller
 OutputCard::OutputCard(Driver::ICan* can, uint8_t id, uint8_t cpuId) : ICard(can, id, cpuId)
 {
 	state = 0;
+	stateChanged = false;
 }
 
 void OutputCard::Process()
 {
-	if(HAL_GetTick() - timeOfLastUpdate > 2000)
+	if(stateChanged == true)
 	{
+		stateChanged = false;
 		timeOfLastUpdate = HAL_GetTick();
 		can->DataFrame(id, (uint8_t*)&state, 2);
-		state++;
 	}
 }
 
@@ -25,7 +26,7 @@ uint8_t OutputCard::GetId() const
 	return id;
 }
 
-void OutputCard::SetNewData(uint8_t *pData, uint8_t len)
+void OutputCard::RxMsg(uint8_t *pData, uint8_t len)
 {
 	char tab[100];
 	int size = sprintf(tab, "Msg from 0x%x", id);
@@ -40,9 +41,21 @@ void OutputCard::SetNewData(uint8_t *pData, uint8_t len)
 		size += size1;
 
 	}
-	tab[size] = '\n';
-	UdpWrite(tab, size + 1);
+	Logger::GetInstance()->Log(tab, size);
 }
 
+void OutputCard::SetState(uint16_t newState)
+{
+	if(state != newState)
+	{
+		state = newState;
+		stateChanged = true;
+	}
+}
+
+uint16_t OutputCard::GetState()
+{
+	return state;
+}
 
 } // namespace Controller

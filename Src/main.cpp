@@ -37,7 +37,7 @@ int main(void)
 		// Process can transmission
 		if(sem == 1)
 		{
-			controller.ReadMsg(RxHeader.StdId >> 5, RxData, RxHeader.DLC);
+			controller.RxMsg(RxHeader.StdId >> 5, RxData, RxHeader.DLC);
 			sem = 0;
 		}
 	}

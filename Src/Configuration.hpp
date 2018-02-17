@@ -39,7 +39,7 @@ public:
 
 private:
 	static const uint8_t cpuId = 1;
-	static const uint8_t cardAmount = 6;
+	static const uint8_t cardAmount = 12;
 	static Card cardList[cardAmount];
 };
 

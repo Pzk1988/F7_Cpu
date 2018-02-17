@@ -78,7 +78,7 @@ uint8_t Can::Init(uint8_t filterId)
 	hcan1.Init.TimeTriggeredMode = DISABLE;
 	hcan1.Init.AutoBusOff = DISABLE;
 	hcan1.Init.AutoWakeUp = DISABLE;
-	hcan1.Init.AutoRetransmission = DISABLE;
+	hcan1.Init.AutoRetransmission = ENABLE;
 	hcan1.Init.ReceiveFifoLocked = DISABLE;
 	hcan1.Init.TransmitFifoPriority = DISABLE;
 	hcan1.Init.Mode = CAN_MODE_NORMAL;

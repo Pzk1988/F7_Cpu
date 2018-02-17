@@ -13,7 +13,8 @@ public:
 	virtual ~InputCard() = default;
 	void Process();
 	uint8_t GetId() const;
-	void SetNewData(uint8_t *pData, uint8_t len);
+	void RxMsg(uint8_t *pData, uint8_t len);
+	uint16_t GetState();
 
 private:
 	uint16_t state;
