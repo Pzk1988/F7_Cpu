@@ -5,7 +5,8 @@
 #include "ICan.hpp"
 #include "Garbage.hpp"
 #include "lwip.h"
-#include <stdio.h>
+
+#include "Chassi.hpp"
 
 CAN_RxHeaderTypeDef   RxHeader;
 uint8_t               RxData[8];
@@ -13,67 +14,32 @@ volatile bool sem = 0;
 
 int main(void)
 {
-  HAL_Init();
-  SystemClock_Config();
-  MX_GPIO_Init();
-  MX_LWIP_Init();
+	HAL_Init();
+	SystemClock_Config();
+	MX_GPIO_Init();
+	MX_LWIP_Init();
 
-  UdpWrite( "Move to while", 13);
-  uint32_t prevTick = HAL_GetTick();
+	// Can driver
+	Driver::ICan* can = new Driver::Can(0x01);
+	can->Init();
 
-  Driver::ICan* can = new Driver::Can();
-  can->Init();
+	// Chassi
+	Controller::Chassi controller(can);
 
-  uint16_t tmp = 0;
-  uint8_t result = 0;
+	while (1)
+	{
+		// Process tcp/ip stack
+		MX_LWIP_Process();
 
-  while (1)
-  {
-	  MX_LWIP_Process();
+		// Process chassi
+		controller.Process();
 
-	  if(HAL_GetTick() - prevTick > 2000)
-	  {
-		  prevTick = HAL_GetTick();
-
-		  // Frame to output card
-		  result |= can->DataFrame(0x02, (uint8_t*)&tmp, 2);
-		  if(result == HAL_OK)
-		  {
-			  char tab[40];
-			  sprintf(tab, "Frame to output %x", tmp);
-			  UdpWrite(tab, strlen(tab));
-		  }
-
-		  // Frame to input card
-		  result |= can->RemoteFrame(0x03);
-		  if(result == HAL_OK)
-		  {
-			  UdpWrite("Frame to input", 15);
-		  }
-
-		  // If error
-		  if( result != HAL_OK )
-		  {
-			  UdpWrite("Can spierdolina", 15);
-			  result = HAL_OK;
-		  }
-
-		  tmp++;
-	  }
-
-	  if(sem == 1)
-	  {
-		  char tab[100];
-		  int size = sprintf(tab, "Msg from %d, ", RxHeader.StdId);
-		  for(size_t i = 0; i < RxHeader.DLC; i++)
-		  {
-			  int size1 = sprintf(&tab[size], "%x, ", RxData[i]);
-			  size += size1;
-
-		  }
-		  UdpWrite(tab, size);
-		  sem = 0;
-	  }
-  }
+		// Process can transmission
+		if(sem == 1)
+		{
+			controller.ReadMsg(RxHeader.StdId >> 5, RxData, RxHeader.DLC);
+			sem = 0;
+		}
+	}
 }
 

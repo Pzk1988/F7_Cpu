@@ -12,17 +12,18 @@ namespace Driver
 class Can : public ICan
 {
 public:
-	Can();
+	Can(uint8_t ownId);
 	uint8_t Init();
 	uint8_t Init(uint8_t filterId);
 	bool DataFrame(uint16_t id, uint8_t* pData, uint8_t len);
 	bool RemoteFrame(uint16_t id);
-	virtual ~Can();
+	virtual ~Can() = default;
 
 private:
 	CAN_TxHeaderTypeDef	TxHeader;
-	uint8_t             TxData[8];
-	uint32_t            TxMailbox;
+	uint8_t TxData[8];
+	uint32_t TxMailbox;
+	uint8_t ownId;
 };
 
 } // namespace Driver

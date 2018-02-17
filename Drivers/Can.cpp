@@ -7,12 +7,9 @@ CAN_HandleTypeDef 	hcan1;
 namespace Driver
 {
 
-Can::Can()
+Can::Can(uint8_t ownId) : ownId(ownId)
 {
-}
 
-Can::~Can()
-{
 }
 
 uint8_t Can::Init()
@@ -97,7 +94,7 @@ uint8_t Can::Init(uint8_t filterId)
 
 	CAN_FilterTypeDef  sFilterConfig;
 
-	uint32_t filter_mask = 0x1fffffff;
+	uint32_t filter_mask = 0x00000000;
 	sFilterConfig.FilterBank = 0;
 	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -107,7 +104,7 @@ uint8_t Can::Init(uint8_t filterId)
 	sFilterConfig.FilterMaskIdLow = (filter_mask >> (11 - 3)) & 0xFFF8;
 	sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
 	sFilterConfig.FilterActivation = ENABLE;
-	sFilterConfig.SlaveStartFilterBank = 14;
+	//sFilterConfig.SlaveStartFilterBank = 14;
 
 	if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK)
 	{
@@ -129,7 +126,7 @@ uint8_t Can::Init(uint8_t filterId)
 
 bool Can::DataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 {
-	TxHeader.StdId = (uint32_t)id;
+	TxHeader.StdId = (ownId << 5) | id;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.DLC = len;
@@ -147,7 +144,7 @@ bool Can::DataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 
 bool Can::RemoteFrame(uint16_t id)
 {
-	TxHeader.StdId = id;
+	TxHeader.StdId = (ownId << 5) | id;
 	TxHeader.RTR = CAN_RTR_REMOTE;
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.DLC = 0;
