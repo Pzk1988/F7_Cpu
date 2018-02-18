@@ -13,6 +13,7 @@ public:
 	{
 		timeOfLastUpdate = 0;
 	}
+	virtual void Init() = 0;
 	virtual void Process() = 0;
 	virtual uint8_t GetId() const = 0;
 	virtual void RxMsg(uint8_t *pData, uint8_t len) = 0;

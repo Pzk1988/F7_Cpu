@@ -8,8 +8,8 @@ class Logger
 public:
 	virtual ~Logger() = default;
 	static Logger* GetInstance();
-	void Log(char* pData, uint8_t len);
-	void LogV(const char* format, ...);
+	void Log(char* pData);
+	void Log(const char* format, ...);
 
 private:
 	static Logger* instance;

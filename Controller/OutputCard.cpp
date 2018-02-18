@@ -11,6 +11,15 @@ OutputCard::OutputCard(Driver::ICan* can, uint8_t id, uint8_t cpuId) : ICard(can
 	stateChanged = false;
 }
 
+void OutputCard::Init()
+{
+	uint8_t data[2];
+	data[0] = 0;
+	data[1] = 0;
+
+	can->DataFrame(id, data, 2);
+}
+
 void OutputCard::Process()
 {
 	if(stateChanged == true)
@@ -41,7 +50,7 @@ void OutputCard::RxMsg(uint8_t *pData, uint8_t len)
 		size += size1;
 
 	}
-	Logger::GetInstance()->Log(tab, size);
+	Logger::GetInstance()->Log(tab);
 }
 
 void OutputCard::SetState(uint16_t newState)

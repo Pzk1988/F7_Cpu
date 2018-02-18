@@ -8,15 +8,17 @@ namespace Controller
 
 InputCard::InputCard(Driver::ICan* can, uint8_t id, uint8_t cpuId) : ICard(can, id, cpuId)
 {
+	can->RemoteFrame(id);
+}
+
+void InputCard::Init()
+{
+
 }
 
 void InputCard::Process()
 {
-//	if(HAL_GetTick() - timeOfLastUpdate > 2000)
-//	{
-//		timeOfLastUpdate = HAL_GetTick();
-//		can->RemoteFrame(id);
-//	}
+
 }
 
 uint8_t InputCard::GetId() const
@@ -44,7 +46,7 @@ void InputCard::RxMsg(uint8_t *pData, uint8_t len)
 			size += size1;
 
 		}
-		Logger::GetInstance()->Log(tab, size);
+		Logger::GetInstance()->Log(tab);
 	}
 }
 

@@ -12,7 +12,7 @@ void UdpWrite(const char *ptr, int len)
 	pb->len = len;
 	pb->payload = (void*)ptr;
 
-	udp_sendto(pcb, pb, &addr, 3333);
+	err_t errorCode = udp_sendto(pcb, pb, &addr, 3333);
 
 	pbuf_free(pb);
 	udp_remove(pcb);

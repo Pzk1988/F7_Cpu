@@ -10,6 +10,7 @@ enum class CARD_TYPE
 	OUTPUT_PWM = 4,
 	OUTPUT_TRIAK = 5,
 	TEMPERATURE = 6
+
 };
 
 struct Card
