@@ -1,6 +1,7 @@
 #include <Can.hpp>
 #include "stm32f746xx.h"
 #include "stm32f7xx_hal_can.h"
+#include "Logger.hpp"
 
 CAN_HandleTypeDef 	hcan1;
 
@@ -21,7 +22,7 @@ uint8_t Can::Init()
 	hcan1.Init.TimeTriggeredMode = DISABLE;
 	hcan1.Init.AutoBusOff = DISABLE;
 	hcan1.Init.AutoWakeUp = DISABLE;
-	hcan1.Init.AutoRetransmission = DISABLE;
+	hcan1.Init.AutoRetransmission = ENABLE;
 	hcan1.Init.ReceiveFifoLocked = DISABLE;
 	hcan1.Init.TransmitFifoPriority = DISABLE;
 	hcan1.Init.Mode = CAN_MODE_NORMAL;
@@ -126,6 +127,14 @@ uint8_t Can::Init(uint8_t filterId)
 
 bool Can::DataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 {
+	char tab[100];
+	int size = sprintf(tab, "Data to %d ", id);
+	for(size_t i = 0; i < len; i++)
+	{
+		size += sprintf(&tab[size], "0x%x ", pData[i]);
+	}
+	Logger::GetInstance()->Log(tab);
+
 	TxHeader.StdId = (ownId << 5) | id;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.IDE = CAN_ID_STD;
@@ -144,6 +153,7 @@ bool Can::DataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 
 bool Can::RemoteFrame(uint16_t id)
 {
+	Logger::GetInstance()->Log("Remote to 0x%x", id);
 	TxHeader.StdId = (ownId << 5) | id;
 	TxHeader.RTR = CAN_RTR_REMOTE;
 	TxHeader.IDE = CAN_ID_STD;
@@ -164,21 +174,3 @@ bool Can::RemoteFrame(uint16_t id)
 } // namespace Driver
 
 
-//  if(HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) != 1)
-//  {
-//    Error_Handler();
-//  }
-//
-//  if(HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//
-//  if((RxHeader.StdId != 0x11)                     ||
-//     (RxHeader.RTR != CAN_RTR_DATA)               ||
-//     (RxHeader.IDE != CAN_ID_STD)                 ||
-//     (RxHeader.DLC != 2)                          ||
-//     ((RxData[0]<<8 | RxData[1]) != 0x55aa))
-//  {
-//    return HAL_ERROR;
-//  }

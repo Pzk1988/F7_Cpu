@@ -17,6 +17,9 @@ public:
 	void RxMsg(uint8_t *pData, uint8_t len);
 	uint16_t GetState();
 
+protected:
+	void SerializeState();
+
 private:
 	uint16_t state;
 };

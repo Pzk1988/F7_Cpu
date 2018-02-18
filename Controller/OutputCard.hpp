@@ -18,6 +18,9 @@ public:
 	void SetState(uint16_t newState);
 	uint16_t GetState();
 
+protected:
+	void SerializeState();
+
 private:
 	uint16_t state;
 	bool stateChanged;

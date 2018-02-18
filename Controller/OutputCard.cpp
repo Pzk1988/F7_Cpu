@@ -51,6 +51,10 @@ void OutputCard::RxMsg(uint8_t *pData, uint8_t len)
 
 	}
 	Logger::GetInstance()->Log(tab);
+	if(len == 0)
+	{
+		stateChanged = true;
+	}
 }
 
 void OutputCard::SetState(uint16_t newState)
@@ -59,12 +63,28 @@ void OutputCard::SetState(uint16_t newState)
 	{
 		state = newState;
 		stateChanged = true;
+		SerializeState();
 	}
 }
 
 uint16_t OutputCard::GetState()
 {
 	return state;
+}
+
+void OutputCard::SerializeState()
+{
+	for(size_t i = 0; i < DATA_SIZE; i++)
+	{
+		if((state & (1 << i)) != 0)
+		{
+			serializedState[i] = 1;
+		}
+		else
+		{
+			serializedState[i] = 0;
+		}
+	}
 }
 
 } // namespace Controller

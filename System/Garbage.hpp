@@ -10,4 +10,11 @@ void _Error_Handler(const char *, int);
 
 
 extern UART_HandleTypeDef huart3;
+
+struct CanRecData
+{
+	CAN_RxHeaderTypeDef   RxHeader;
+	volatile uint8_t RxData[8];
+};
+
 #endif

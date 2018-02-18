@@ -8,6 +8,7 @@ namespace Controller
 
 InputCard::InputCard(Driver::ICan* can, uint8_t id, uint8_t cpuId) : ICard(can, id, cpuId)
 {
+	state = 0;
 	can->RemoteFrame(id);
 }
 
@@ -32,6 +33,7 @@ void InputCard::RxMsg(uint8_t *pData, uint8_t len)
 	{
 		timeOfLastUpdate = HAL_GetTick();
 		state = pData[0] | (pData[1] << 8);
+		SerializeState();
 
 		char tab[100];
 		int size = sprintf(tab, "Msg from 0x%x", id);
@@ -53,5 +55,20 @@ void InputCard::RxMsg(uint8_t *pData, uint8_t len)
 uint16_t InputCard::GetState()
 {
 	return state;
+}
+
+void InputCard::SerializeState()
+{
+	for(size_t i = 0; i < DATA_SIZE; i++)
+	{
+		if((state & (1 << i)) != 0)
+		{
+			serializedState[i] = 1;
+		}
+		else
+		{
+			serializedState[i] = 0;
+		}
+	}
 }
 } // namespace Controller

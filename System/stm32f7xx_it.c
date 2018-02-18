@@ -5,9 +5,11 @@
 #include <stdint.h>
 
 extern CAN_HandleTypeDef    hcan1;
-extern CAN_RxHeaderTypeDef   RxHeader;
-extern uint8_t               RxData[8];
-extern volatile uint8_t sem;
+
+// Can Fifo
+extern volatile struct CanRecData canRecData[10];
+extern volatile uint8_t wCanRecData;
+extern volatile uint8_t rCanRecData;
 
 void SysTick_Handler(void)
 {
@@ -17,9 +19,19 @@ void SysTick_Handler(void)
 
 void CAN1_RX0_IRQHandler(void)
 {
-	  if (HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-	  {
-	  }
-	  sem = 1;
+	if (HAL_CAN_GetRxMessage(&hcan1,
+							 CAN_RX_FIFO0,
+			  	  	  	  	 &(canRecData[wCanRecData].RxHeader),
+							 canRecData[wCanRecData].RxData) != HAL_OK)
+	{
+	}
+	if(wCanRecData == 9)
+	{
+		wCanRecData = 0;
+	}
+	else
+	{
+		wCanRecData++;
+	}
 }
 

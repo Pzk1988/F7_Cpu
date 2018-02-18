@@ -17,12 +17,20 @@ public:
 	virtual void Process() = 0;
 	virtual uint8_t GetId() const = 0;
 	virtual void RxMsg(uint8_t *pData, uint8_t len) = 0;
+	uint8_t* GetSerializedDataAddress()
+	{
+		return serializedState;
+	}
 
 protected:
+	const static uint8_t DATA_SIZE = 16;
 	Driver::ICan* can;
 	uint8_t id;
 	uint8_t cpuId;
 	uint32_t timeOfLastUpdate;
+	uint8_t serializedState[DATA_SIZE];
+
+	virtual void SerializeState() = 0;
 };
 
 }

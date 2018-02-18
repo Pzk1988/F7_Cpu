@@ -14,18 +14,27 @@
 #include "Chassi.hpp"
 #include "Serial.hpp"
 
+// Forward declarations
+static void Statistics();
+
 // Global variable
 Driver::ISerial* serial;
-CAN_RxHeaderTypeDef   RxHeader;
-volatile uint8_t RxData[8];
-volatile bool sem = 0;
+
+// Can Fifo
+volatile struct CanRecData canRecData[10];
+volatile uint8_t wCanRecData;
+volatile uint8_t rCanRecData;
 
 int main(void)
 {
 	HAL_Init();
 	SystemClock_Config();
 	MX_GPIO_Init();
-	//MX_LWIP_Init();
+	MX_LWIP_Init();
+
+	// Can rec FIFO
+	wCanRecData = 0;
+	rCanRecData = 0;
 
 	// Serial
 	serial = new Driver::Serial();
@@ -43,21 +52,47 @@ int main(void)
 	controller = new Controller::Chassi(can);
 	controller->Init();
 
-
 	while (1)
 	{
 		// Process tcp/ip stack
-		//MX_LWIP_Process();
+		MX_LWIP_Process();
 
 		// Process chassi
 		controller->Process();
 
-		// Process can transmission
-		if(sem == 1)
+		// Process can fifo transmission
+		// TODO: Create fifo class, think of race condition
+		if(rCanRecData != wCanRecData)
 		{
-			controller->RxMsg(RxHeader.StdId >> 5, (uint8_t*)(RxData), RxHeader.DLC);
-			sem = 0;
+
+			controller->RxMsg((CAN_RxHeaderTypeDef*)&(canRecData[rCanRecData].RxHeader),
+							  (uint8_t*)(canRecData[rCanRecData].RxData));
+			if(rCanRecData == 9)
+			{
+				rCanRecData = 0;
+			}
+			else
+			{
+				rCanRecData++;
+			}
 		}
+
+		// Calculate statistics
+		Statistics();
+	}
+}
+
+void Statistics()
+{
+	static uint32_t rounds = 0;
+	static uint32_t prevTime = HAL_GetTick();
+
+	rounds++;
+	if(HAL_GetTick() - prevTime > 1000)
+	{
+		Logger::GetInstance()->Log("%d rounds/sec", rounds);
+		rounds = 0;
+		prevTime = HAL_GetTick();
 	}
 }
 
