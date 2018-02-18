@@ -71,7 +71,7 @@ uint16_t OutputCard::GetState()
 {
 	return state;
 }
-
+#warning think of better way to send data after change, if someone set serializedState than card does not know about it yet
 void OutputCard::SerializeState()
 {
 	for(size_t i = 0; i < DATA_SIZE; i++)
@@ -86,5 +86,6 @@ void OutputCard::SerializeState()
 		}
 	}
 }
+
 
 } // namespace Controller

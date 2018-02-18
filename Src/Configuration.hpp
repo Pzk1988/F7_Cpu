@@ -8,8 +8,7 @@ enum class CARD_TYPE
 	INPUT = 2,
 	OUTPUT = 3,
 	OUTPUT_PWM = 4,
-	OUTPUT_TRIAK = 5,
-	TEMPERATURE = 6
+	TEMPERATURE = 5
 
 };
 

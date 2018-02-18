@@ -13,5 +13,5 @@ Card Configuration::cardList[] =
 		{10, CARD_TYPE::TEMPERATURE	},
 		{11, CARD_TYPE::OUTPUT_PWM	},
 		{12, CARD_TYPE::OUTPUT_PWM	},
-		{13, CARD_TYPE::OUTPUT_TRIAK}
+		{13, CARD_TYPE::OUTPUT_PWM}
 };

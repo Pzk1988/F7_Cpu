@@ -45,11 +45,6 @@ void Chassi::Init()
 				outputsAmount++;
 				break;
 			}
-			case CARD_TYPE::OUTPUT_TRIAK:
-			{
-				outputsAmount++;
-				break;
-			}
 			case CARD_TYPE::TEMPERATURE:
 			{
 				inputsAmount++;
@@ -80,7 +75,6 @@ void Chassi::Init()
 			}
 			case CARD_TYPE::OUTPUT:
 			case CARD_TYPE::OUTPUT_PWM:
-			case CARD_TYPE::OUTPUT_TRIAK:
 			{
 				pOutputs[outIndex++] = cardsVector[i]->GetSerializedDataAddress();
 				break;
