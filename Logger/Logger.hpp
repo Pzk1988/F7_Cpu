@@ -10,6 +10,7 @@ public:
 	static Logger* GetInstance();
 	void Log(char* pData);
 	void Log(const char* format, ...);
+	void Log(uint8_t* pData, uint8_t len, uint8_t id);
 
 private:
 	static Logger* instance;

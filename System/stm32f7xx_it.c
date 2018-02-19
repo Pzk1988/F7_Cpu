@@ -21,8 +21,8 @@ void CAN1_RX0_IRQHandler(void)
 {
 	if (HAL_CAN_GetRxMessage(&hcan1,
 							 CAN_RX_FIFO0,
-			  	  	  	  	 &(canRecData[wCanRecData].RxHeader),
-							 canRecData[wCanRecData].RxData) != HAL_OK)
+							 &(canRecData[wCanRecData].RxHeader),
+							 (uint8_t*)(canRecData[wCanRecData].RxData)) != HAL_OK)
 	{
 	}
 	if(wCanRecData == 9)

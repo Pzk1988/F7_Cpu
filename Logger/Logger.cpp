@@ -1,5 +1,5 @@
 // Clib includes
-#include <string.h>
+#include <cstring>
 
 // Middleware include
 // None
@@ -11,9 +11,20 @@
 
 Logger* Logger::instance = nullptr;
 
+Logger* Logger::GetInstance()
+{
+	if(instance == nullptr)
+	{
+		instance = new Logger();
+		ASSERT(instance != nullptr);
+
+		instance->Log("Logger created");
+	}
+	return instance;
+}
+
 void Logger::Log(char* pData)
 {
-//	UdpWrite(pData, strlen(pData));
 	char tab[203];
 	uint8_t len = strlen(pData);
 	memcpy(tab, pData, len);
@@ -34,15 +45,20 @@ void Logger::Log(const char* format, ...)
 	va_end( args );
 }
 
-Logger* Logger::GetInstance()
+void Logger::Log(uint8_t* pData, uint8_t len, uint8_t id)
 {
-	if(instance == nullptr)
+	char tab[100];
+	int size = sprintf(tab, "Msg from 0x%x", id);
+	if(len != 0)
 	{
-		instance = new Logger();
-		ASSERT(instance != nullptr);
-
-		instance->Log("Logger created");
+		int size1 = sprintf(&tab[size], ": ");
+		size += size1;
 	}
-	return instance;
-};
+	for(size_t i = 0; i < len; i++)
+	{
+		int size1 = sprintf(&tab[size], " 0x%x", pData[i]);
+		size += size1;
+	}
+	Log(tab);
+}
 

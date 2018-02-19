@@ -125,7 +125,7 @@ uint8_t Can::Init(uint8_t filterId)
 	return ret;
 }
 
-bool Can::DataFrame(uint16_t id, uint8_t* pData, uint8_t len)
+bool Can::SendDataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 {
 	char tab[100];
 	int size = sprintf(tab, "Data to %d ", id);
@@ -151,7 +151,7 @@ bool Can::DataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 	return HAL_OK;
 }
 
-bool Can::RemoteFrame(uint16_t id)
+bool Can::SendRemoteFrame(uint16_t id)
 {
 	Logger::GetInstance()->Log("Remote to 0x%x", id);
 	TxHeader.StdId = (ownId << 5) | id;

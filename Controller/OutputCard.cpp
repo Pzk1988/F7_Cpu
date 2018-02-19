@@ -5,84 +5,69 @@
 namespace Controller
 {
 
-OutputCard::OutputCard(Driver::ICan* can, uint8_t id, uint8_t cpuId) : ICard(can, id, cpuId)
+OutputCard::OutputCard(Driver::ICommunication* commDriver, uint8_t cardId, uint8_t cpuId) :
+		      CardBase(commDriver, cardId, cpuId)
 {
-	state = 0;
-	stateChanged = false;
+	packedState = 0;
+	remoteRequest = 0;
 }
 
 void OutputCard::Init()
 {
-	uint8_t data[2];
-	data[0] = 0;
-	data[1] = 0;
+	uint16_t initData = 0;
 
-	can->DataFrame(id, data, 2);
+	commDriver->SendDataFrame(cardId, (uint8_t*)&initData, 2);
 }
 
 void OutputCard::Process()
 {
-	if(stateChanged == true)
+	if(memcmp(prevUnpackedState, unpackedState, sizeof(prevUnpackedState)) != 0 ||
+	   remoteRequest == true)
 	{
-		stateChanged = false;
-		timeOfLastUpdate = HAL_GetTick();
-		can->DataFrame(id, (uint8_t*)&state, 2);
-	}
-}
-
-uint8_t OutputCard::GetId() const
-{
-	return id;
-}
-
-void OutputCard::RxMsg(uint8_t *pData, uint8_t len)
-{
-	char tab[100];
-	int size = sprintf(tab, "Msg from 0x%x", id);
-	if(len != 0)
-	{
-		int size1 = sprintf(&tab[size], ": ");
-		size += size1;
-	}
-	for(size_t i = 0; i < len; i++)
-	{
-		int size1 = sprintf(&tab[size], " 0x%x", pData[i]);
-		size += size1;
-
-	}
-	Logger::GetInstance()->Log(tab);
-	if(len == 0)
-	{
-		stateChanged = true;
-	}
-}
-
-void OutputCard::SetState(uint16_t newState)
-{
-	if(state != newState)
-	{
-		state = newState;
-		stateChanged = true;
+		remoteRequest = false;
+		memcpy(prevUnpackedState, unpackedState, sizeof(prevUnpackedState));
 		SerializeState();
+		commDriver->SendDataFrame(cardId, (uint8_t*)&packedState, 2);
 	}
+}
+
+void OutputCard::RxDataMsg(uint8_t *pData, uint8_t len)
+{
+	if(len == 0) // TODO: Think if there should be separate method for remote msg
+	{
+		remoteRequest = true;
+	}
+	Logger::GetInstance()->Log(pData, len, cardId);
 }
 
 uint16_t OutputCard::GetState()
 {
-	return state;
+	return packedState;
 }
-#warning think of better way to send data after change, if someone set serializedState than card does not know about it yet
-void OutputCard::SerializeState()
+
+void OutputCard::DeserializeState()
 {
-	for(size_t i = 0; i < DATA_SIZE; i++)
+	for(size_t i = 0; i < DEVICE_AMOUNT; i++)
 	{
-		if((state & (1 << i)) != 0)
+		if((packedState & (1 << i)) != 0)
 		{
-			serializedState[i] = 1;
+			unpackedState[i] = 1;
 		}
 		else
 		{
-			serializedState[i] = 0;
+			unpackedState[i] = 0;
+		}
+	}
+}
+
+void OutputCard::SerializeState()
+{
+	packedState = 0;
+	for(size_t i = 0; i < DEVICE_AMOUNT; i++)
+	{
+		if(unpackedState[i] == 1)
+		{
+			packedState |= (1 << i);
 		}
 	}
 }

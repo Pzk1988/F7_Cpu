@@ -1,4 +1,5 @@
 // Clib includes
+#include <ICommunication.hpp>
 #include <string.h>
 
 // Middleware include
@@ -8,11 +9,11 @@
 
 // Source include
 #include "Can.hpp"
-#include "ICan.hpp"
 #include "Garbage.hpp"
 #include "Logger.hpp"
 #include "Chassi.hpp"
 #include "Serial.hpp"
+#include "ICommunication.hpp"
 
 // Forward declarations
 static void Statistics();
@@ -28,6 +29,10 @@ volatile uint8_t rCanRecData;
 int main(void)
 {
 	HAL_Init();
+
+	SCB_EnableICache();
+	SCB_EnableDCache();
+
 	SystemClock_Config();
 	MX_GPIO_Init();
 	MX_LWIP_Init();
@@ -43,13 +48,13 @@ int main(void)
 	Logger::GetInstance()->Log("Tcp/ip stack initialized");
 
 	// Can driver
-	Driver::ICan* can;
-	can = new Driver::Can(0x01);
-	can->Init();
+	Driver::ICommunication* canDriver;
+	canDriver = new Driver::Can(0x01);
+	canDriver->Init();
 
 	// Chassi
 	Controller::Chassi* controller;
-	controller = new Controller::Chassi(can);
+	controller = new Controller::Chassi(canDriver);
 	controller->Init();
 
 	while (1)

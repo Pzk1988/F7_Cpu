@@ -1,29 +1,41 @@
 #ifndef OUTPUTCARD_H
 #define OUTPUTCARD_H
 
-#include <ICard.hpp>
+// Clib includes
+// None
+
+// Middleware include
+// None
+
+// Source include
+#include "CardBase.hpp"
 
 namespace Controller
 {
 
-class OutputCard: public ICard
+class OutputCard: public CardBase
 {
 public:
-	OutputCard(Driver::ICan* can, uint8_t id, uint8_t cpuId);
+	OutputCard(Driver::ICommunication* commDriver, uint8_t cardId, uint8_t cpuId);
 	virtual ~OutputCard() = default;
 	void Init();
 	void Process();
-	uint8_t GetId() const;
-	void RxMsg(uint8_t *pData, uint8_t len);
-	void SetState(uint16_t newState);
+	void RxDataMsg(uint8_t *pData, uint8_t len);
 	uint16_t GetState();
 
 protected:
+	// Serialiaze from unpacked to packed version
 	void SerializeState();
 
+	// Deserialize from packed to unpacked version
+	void DeserializeState();
+
 private:
-	uint16_t state;
-	bool stateChanged;
+	// Packed state, received from or ready to be send to card
+	uint16_t packedState;
+
+	// if remote request for data comes use this flag to send back data
+	bool remoteRequest;
 };
 
 } // namespace Controller

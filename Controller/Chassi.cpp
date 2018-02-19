@@ -1,21 +1,29 @@
-#include "Chassi.hpp"
-#include <stdio.h>
+// Clib includes
+#include <cstring>
+#include <cstdio>
 #include <algorithm>
+
+// Middleware include
+#include "stm32f7xx_hal.h"
+
+// Source include
+#include "Chassi.hpp"
 #include "Logger.hpp"
 #include "Configuration.hpp"
 #include "InputCard.hpp"
 #include "OutputCard.hpp"
-#include "stm32f7xx_hal_can.h"
-#include <string.h>
 
 namespace Controller
 {
 
-Chassi::Chassi(Driver::ICan* can) : can(can), pInputs(nullptr), pOutputs(nullptr) {}
+Chassi::Chassi( Driver::ICommunication* commDriver ) : commDriver(commDriver),
+													   pInputs(nullptr),
+													   pOutputs(nullptr)
+{}
 
 void Chassi::Init()
 {
-	ICard* card = nullptr;
+	CardBase* card = nullptr;
 	uint8_t inputsAmount = 0;
 	uint8_t outputsAmount = 0;
 
@@ -26,7 +34,7 @@ void Chassi::Init()
 		{
 			case CARD_TYPE::INPUT:
 			{
-				card = new InputCard(can, Configuration::GetCardList()[i].id, Configuration::GetCpuId());
+				card = new InputCard(commDriver, Configuration::GetCardList()[i].id, Configuration::GetCpuId());
 				card->Init();
 				cardsVector.push_back(card);
 				inputsAmount++;
@@ -34,7 +42,7 @@ void Chassi::Init()
 			}
 			case CARD_TYPE::OUTPUT:
 			{
-				card = new OutputCard(can, Configuration::GetCardList()[i].id, Configuration::GetCpuId());
+				card = new OutputCard(commDriver, Configuration::GetCardList()[i].id, Configuration::GetCpuId());
 				card->Init();
 				cardsVector.push_back(card);
 				outputsAmount++;
@@ -58,9 +66,9 @@ void Chassi::Init()
 	}
 
 	// Init inputs and outputs for logic expressions
-	pInputs = new uint8_t*[inputsAmount];
+	pInputs = new uint16_t*[inputsAmount];
 	uint8_t inIndex = 0;
-	pOutputs = new uint8_t*[outputsAmount];
+	pOutputs = new uint16_t*[outputsAmount];
 	uint8_t outIndex = 0;
 
 	for(size_t i = 0; i < Configuration::GetCardAmount(); i++)
@@ -88,24 +96,17 @@ void Chassi::Init()
 	}
 }
 
-void Chassi::RxMsg(CAN_RxHeaderTypeDef* header, uint8_t *pData)
+void Chassi::RxMsg( CAN_RxHeaderTypeDef* header, uint8_t *pData )
 {
 	uint16_t senderId = header->StdId >> 5;
-	auto it = std::find_if(cardsVector.begin(), cardsVector.end(), [senderId](ICard* card)
+	auto it = std::find_if(cardsVector.begin(), cardsVector.end(), [senderId](CardBase* card)
 	{
-		if(senderId == card->GetId())
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return senderId == card->GetId() ? true : false;
 	});
 
-	if(it != cardsVector.end())
+	if( it != cardsVector.end() )
 	{
-		(*it)->RxMsg(pData, header->DLC);
+		(*it)->RxDataMsg(pData, header->DLC);
 	}
 	else
 	{
@@ -116,11 +117,14 @@ void Chassi::RxMsg(CAN_RxHeaderTypeDef* header, uint8_t *pData)
 void Chassi::Process()
 {
 	// Send output state, check input state
-	std::for_each(cardsVector.begin(), cardsVector.end(), [](ICard* card)
+	std::for_each(cardsVector.begin(), cardsVector.end(), [](CardBase* card)
 	{
 		card->Process();
 	});
 
+	/*****************************************/
+	/************** TEMP CODE ****************/
+	/*****************************************/
 	// Calculate logic expressions
 	memcpy(pOutputs[0], pInputs[0], 16);
 
@@ -142,6 +146,9 @@ void Chassi::Process()
 		}
 		printf("\r\n");
 	}
+	/*****************************************/
+	/*****************************************/
+	/*****************************************/
 }
 } // namespace Controller
 
