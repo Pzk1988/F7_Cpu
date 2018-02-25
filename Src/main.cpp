@@ -69,7 +69,6 @@ int main(void)
 		// TODO: Create fifo class, think of race condition
 		if(rCanRecData != wCanRecData)
 		{
-
 			controller->RxMsg((CAN_RxHeaderTypeDef*)&(canRecData[rCanRecData].RxHeader),
 							  (uint8_t*)(canRecData[rCanRecData].RxData));
 			if(rCanRecData == 9)
@@ -83,7 +82,7 @@ int main(void)
 		}
 
 		// Calculate statistics
-		Statistics();
+//		Statistics();
 	}
 }
 

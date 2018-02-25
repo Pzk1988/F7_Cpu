@@ -13,7 +13,7 @@ namespace Controller
 {
 
 InputCard::InputCard(Driver::ICommunication* commDriver, uint8_t cardId, uint8_t cpuId) :
-		   CardBase(commDriver, cardId, cpuId)
+		   CardBase(commDriver, cardId, cpuId, CARD_TYPE::INPUT)
 {
 	packedState = 0;
 	commDriver->SendRemoteFrame(cardId);

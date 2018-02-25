@@ -6,7 +6,7 @@ namespace Controller
 {
 
 OutputCard::OutputCard(Driver::ICommunication* commDriver, uint8_t cardId, uint8_t cpuId) :
-		      CardBase(commDriver, cardId, cpuId)
+		      CardBase(commDriver, cardId, cpuId, CARD_TYPE::OUTPUT)
 {
 	packedState = 0;
 	remoteRequest = 0;

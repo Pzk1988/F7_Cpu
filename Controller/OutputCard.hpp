@@ -20,7 +20,7 @@ public:
 	virtual ~OutputCard() = default;
 	void Init();
 	void Process();
-	void RxDataMsg(uint8_t *pData, uint8_t len);
+	void RxDataMsg(uint8_t *pData, uint8_t len) override;
 	uint16_t GetState();
 
 protected:

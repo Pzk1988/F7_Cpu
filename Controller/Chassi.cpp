@@ -12,6 +12,7 @@
 #include "Configuration.hpp"
 #include "InputCard.hpp"
 #include "OutputCard.hpp"
+#include "TempCard.hpp"
 
 namespace Controller
 {
@@ -55,6 +56,9 @@ void Chassi::Init()
 			}
 			case CARD_TYPE::TEMPERATURE:
 			{
+				card = new TempCard(commDriver, Configuration::GetCardList()[i].id, Configuration::GetCpuId());
+				card->Init();
+				cardsVector.push_back(card);
 				inputsAmount++;
 				break;
 			}
@@ -98,7 +102,8 @@ void Chassi::Init()
 
 void Chassi::RxMsg( CAN_RxHeaderTypeDef* header, uint8_t *pData )
 {
-	uint16_t senderId = header->StdId >> 5;
+	uint16_t senderId = ( header->IDE == CAN_ID_STD ? (header->StdId & 0x03FF) >> 5 : (header->ExtId & 0x03FF) >> 5 );
+
 	auto it = std::find_if(cardsVector.begin(), cardsVector.end(), [senderId](CardBase* card)
 	{
 		return senderId == card->GetId() ? true : false;
@@ -106,7 +111,14 @@ void Chassi::RxMsg( CAN_RxHeaderTypeDef* header, uint8_t *pData )
 
 	if( it != cardsVector.end() )
 	{
-		(*it)->RxDataMsg(pData, header->DLC);
+		if((*it)->GetType() != CARD_TYPE::TEMPERATURE)
+		{
+			(*it)->RxDataMsg(pData, header->DLC);
+		}
+		else
+		{
+			(*it)->RxDataMsg(pData, header->ExtId >> 10, header->DLC);
+		}
 	}
 	else
 	{
@@ -128,24 +140,24 @@ void Chassi::Process()
 	// Calculate logic expressions
 	memcpy(pOutputs[0], pInputs[0], 16);
 
-	static uint32_t prevTime = HAL_GetTick();
-
-	if(HAL_GetTick() - prevTime > 1000)
-	{
-		prevTime = HAL_GetTick();
-		printf("Card 0: ");
-		for(int i = 0; i < 16; i++)
-		{
-			printf("%d ", pInputs[0][i]);
-		}
-
-		printf("\r\nCard 1: ");
-		for(int i = 0; i < 16; i++)
-		{
-			printf("%d ", pOutputs[0][i]);
-		}
-		printf("\r\n");
-	}
+//	static uint32_t prevTime = HAL_GetTick();
+//
+//	if(HAL_GetTick() - prevTime > 1000)
+//	{
+//		prevTime = HAL_GetTick();
+//		printf("Card 0: ");
+//		for(int i = 0; i < 16; i++)
+//		{
+//			printf("%d ", pInputs[0][i]);
+//		}
+//
+//		printf("\r\nCard 1: ");
+//		for(int i = 0; i < 16; i++)
+//		{
+//			printf("%d ", pOutputs[0][i]);
+//		}
+//		printf("\r\n");
+//	}
 	/*****************************************/
 	/*****************************************/
 	/*****************************************/

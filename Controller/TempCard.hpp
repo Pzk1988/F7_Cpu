@@ -19,7 +19,7 @@ public:
 	virtual ~TempCard() = default;
 	void Init() {}
 	void Process() {}
-	void RxDataMsg(uint8_t sensorSet, uint8_t *pData, uint8_t len);
+	void RxDataMsg(uint8_t *pData, uint32_t extId, uint8_t len) override;
 	uint16_t GetState(uint8_t sensor);
 
 protected:

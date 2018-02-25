@@ -62,3 +62,20 @@ void Logger::Log(uint8_t* pData, uint8_t len, uint8_t id)
 	Log(tab);
 }
 
+void Logger::Log(uint8_t* pData, uint32_t extId, uint8_t len, uint8_t id)
+{
+	char tab[100];
+	int size = sprintf(tab, "Msg from 0x%x, extId 0x%x", id, (extId & 0x03FFFF));
+	if(len != 0)
+	{
+		int size1 = sprintf(&tab[size], ":\r\n");
+		size += size1;
+	}
+	for(size_t i = 0; i < len; i++)
+	{
+		int size1 = sprintf(&tab[size], "0x%x ", pData[i]);
+		size += size1;
+	}
+	Log(tab);
+}
+

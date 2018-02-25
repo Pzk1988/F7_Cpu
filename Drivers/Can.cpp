@@ -127,6 +127,9 @@ uint8_t Can::Init(uint8_t filterId)
 
 bool Can::SendDataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 {
+	CAN_TxHeaderTypeDef	TxHeader;
+	uint32_t TxMailbox;
+
 	char tab[100];
 	int size = sprintf(tab, "Data to %d ", id);
 	for(size_t i = 0; i < len; i++)
@@ -151,8 +154,41 @@ bool Can::SendDataFrame(uint16_t id, uint8_t* pData, uint8_t len)
 	return HAL_OK;
 }
 
+bool Can::SendDataFrame(uint16_t id, uint32_t extId, uint8_t* pData, uint8_t len)
+{
+	CAN_TxHeaderTypeDef	TxHeader;
+	uint32_t TxMailbox;
+
+	char tab[100];
+	int size = sprintf(tab, "Data to %d ", id);
+	for(size_t i = 0; i < len; i++)
+	{
+		size += sprintf(&tab[size], "0x%x ", pData[i]);
+	}
+	Logger::GetInstance()->Log(tab);
+
+	TxHeader.StdId = (ownId << 5) | id;
+	TxHeader.RTR = CAN_RTR_DATA;
+	TxHeader.IDE = CAN_ID_EXT;
+	TxHeader.ExtId = extId;
+	TxHeader.DLC = len;
+	TxHeader.TransmitGlobalTime = DISABLE;
+
+	if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, pData, &TxMailbox) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+
+	while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) != 3) {}
+
+	return HAL_OK;
+}
+
 bool Can::SendRemoteFrame(uint16_t id)
 {
+	CAN_TxHeaderTypeDef	TxHeader;
+	uint32_t TxMailbox;
+
 	Logger::GetInstance()->Log("Remote to 0x%x", id);
 	TxHeader.StdId = (ownId << 5) | id;
 	TxHeader.RTR = CAN_RTR_REMOTE;

@@ -1,16 +1,8 @@
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
 #include <stdint.h>
+#include "CardBase.hpp"
 
-enum class CARD_TYPE
-{
-	CPU = 1,
-	INPUT = 2,
-	OUTPUT = 3,
-	OUTPUT_PWM = 4,
-	TEMPERATURE = 5
-
-};
 
 struct Card
 {
