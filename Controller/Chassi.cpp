@@ -140,11 +140,12 @@ void Chassi::Process()
 	// Calculate logic expressions
 	memcpy(pOutputs[0], pInputs[0], 16);
 
-//	static uint32_t prevTime = HAL_GetTick();
-//
-//	if(HAL_GetTick() - prevTime > 1000)
-//	{
-//		prevTime = HAL_GetTick();
+	static uint32_t prevTime = HAL_GetTick();
+
+	if(HAL_GetTick() - prevTime > 1000)
+	{
+		prevTime = HAL_GetTick();
+
 //		printf("Card 0: ");
 //		for(int i = 0; i < 16; i++)
 //		{
@@ -157,7 +158,13 @@ void Chassi::Process()
 //			printf("%d ", pOutputs[0][i]);
 //		}
 //		printf("\r\n");
-//	}
+		printf("Card 2: ");
+		for(int i = 0; i < 16; i++)
+		{
+			printf("%d ", pInputs[1][i]);
+		}
+		printf("\r\n");
+	}
 	/*****************************************/
 	/*****************************************/
 	/*****************************************/
