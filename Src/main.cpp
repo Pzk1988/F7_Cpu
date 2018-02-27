@@ -6,6 +6,8 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_can.h"
 #include "lwip.h"
+#include <lwip/tcp.h>
+#include <lwip/err.h>
 
 // Source include
 #include "Can.hpp"
@@ -17,9 +19,13 @@
 
 // Forward declarations
 static void Statistics();
+static void WebServer();
+static void WebServerInit();
+static err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
 
 // Global variable
 Driver::ISerial* serial;
+tcp_pcb* tcp_echoserver_pcb;
 
 // Can Fifo
 volatile struct CanRecData canRecData[10];
@@ -36,6 +42,7 @@ int main(void)
 	SystemClock_Config();
 	MX_GPIO_Init();
 	MX_LWIP_Init();
+	WebServerInit();
 
 	// Can rec FIFO
 	wCanRecData = 0;
@@ -83,6 +90,9 @@ int main(void)
 
 		// Calculate statistics
 //		Statistics();
+
+		// Handle web server
+		void WebServer();
 	}
 }
 
@@ -100,3 +110,40 @@ void Statistics()
 	}
 }
 
+void WebServerInit()
+{
+	tcp_echoserver_pcb = tcp_new();
+
+	if (tcp_echoserver_pcb != NULL)
+	{
+		err_t err;
+
+		/* bind echo_pcb to port 7 (ECHO protocol) */
+		err = tcp_bind(tcp_echoserver_pcb, IP_ADDR_ANY, 80);
+
+		if (err == ERR_OK)
+		{
+			/* start tcp listening for echo_pcb */
+			tcp_echoserver_pcb = tcp_listen(tcp_echoserver_pcb);
+
+			/* initialize LwIP tcp_accept callback function */
+			tcp_accept(tcp_echoserver_pcb, tcp_echoserver_accept);
+		}
+		else
+		{
+			printf("Can not bind pcb\n");
+		}
+	}
+	else
+	{
+		printf("Can not create new pcb\n");
+	}
+}
+
+err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
+{
+	tcp_write(newpcb, "Hello world", 11, 0);
+	tcp_output(newpcb);
+	printf("Callback\r\n");
+	return ERR_OK;
+}
